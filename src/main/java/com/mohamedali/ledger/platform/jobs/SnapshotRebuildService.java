@@ -35,41 +35,7 @@ public class SnapshotRebuildService {
             return new SnapshotRebuildResult(0, 0, false, true);
         }
 
-        // Build in staging first to avoid blocking live writes during aggregation.
-        jdbcTemplate.execute("DROP TABLE IF EXISTS account_balances_rebuild");
-        jdbcTemplate.execute(
-                """
-                CREATE TABLE account_balances_rebuild (
-                    account_id UUID PRIMARY KEY,
-                    balance NUMERIC(20, 8) NOT NULL,
-                    version BIGINT NOT NULL DEFAULT 0,
-                    last_entry_id UUID,
-                    updated_at TIMESTAMPTZ NOT NULL
-                )
-                """
-        );
-
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                """
-                SELECT account_id,
-                       COALESCE(SUM(CASE WHEN direction = 'DEBIT' THEN amount ELSE -amount END), 0) AS balance
-                FROM journal_entries
-                GROUP BY account_id
-                """
-        );
-
-        int rebuiltRows = 0;
-        for (Map<String, Object> row : rows) {
-            UUID accountId = (UUID) row.get("account_id");
-            BigDecimal balance = (BigDecimal) row.get("balance");
-            jdbcTemplate.update(
-                    "INSERT INTO account_balances_rebuild(account_id, balance, version, last_entry_id, updated_at) VALUES (?, ?, 0, NULL, ?)",
-                    accountId,
-                    balance,
-                    Timestamp.from(java.time.Instant.now())
-            );
-            rebuiltRows++;
-        }
+        int rebuiltRows = buildStagingTable();
 
         Integer mismatchCount = jdbcTemplate.queryForObject(
                 """
@@ -126,6 +92,25 @@ public class SnapshotRebuildService {
             return new SnapshotRebuildResult(0, 0, false, true);
         }
 
+        int rebuiltRows = buildStagingTable();
+
+        forceSwapFromStaging();
+        return new SnapshotRebuildResult(rebuiltRows, 0, true, false);
+    }
+
+    private void forceSwapFromStaging() {
+        jdbcTemplate.update("TRUNCATE TABLE account_balances");
+        jdbcTemplate.update(
+                """
+                INSERT INTO account_balances(account_id, balance, version, last_entry_id, updated_at)
+                SELECT account_id, balance, version, last_entry_id, updated_at
+                FROM account_balances_rebuild
+                """
+        );
+        jdbcTemplate.execute("DROP TABLE account_balances_rebuild");
+    }
+
+    private int buildStagingTable() {
         jdbcTemplate.execute("DROP TABLE IF EXISTS account_balances_rebuild");
         jdbcTemplate.execute(
                 """
@@ -147,6 +132,7 @@ public class SnapshotRebuildService {
                 GROUP BY account_id
                 """
         );
+
         int rebuiltRows = 0;
         for (Map<String, Object> row : rows) {
             jdbcTemplate.update(
@@ -157,21 +143,7 @@ public class SnapshotRebuildService {
             );
             rebuiltRows++;
         }
-
-        forceSwapFromStaging();
-        return new SnapshotRebuildResult(rebuiltRows, 0, true, false);
-    }
-
-    private void forceSwapFromStaging() {
-        jdbcTemplate.update("TRUNCATE TABLE account_balances");
-        jdbcTemplate.update(
-                """
-                INSERT INTO account_balances(account_id, balance, version, last_entry_id, updated_at)
-                SELECT account_id, balance, version, last_entry_id, updated_at
-                FROM account_balances_rebuild
-                """
-        );
-        jdbcTemplate.execute("DROP TABLE account_balances_rebuild");
+        return rebuiltRows;
     }
 
     public record SnapshotRebuildResult(int rebuiltRows, int mismatchCount, boolean swapped, boolean skippedDueToLock) {
