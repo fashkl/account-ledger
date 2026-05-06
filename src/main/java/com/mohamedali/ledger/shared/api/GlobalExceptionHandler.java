@@ -5,6 +5,8 @@ import com.mohamedali.ledger.shared.exception.AccountClosedException;
 import com.mohamedali.ledger.shared.exception.AccountNotFoundException;
 import com.mohamedali.ledger.shared.exception.IdempotencyKeyCollisionException;
 import com.mohamedali.ledger.shared.exception.InsufficientFundsException;
+import com.mohamedali.ledger.shared.exception.InvalidOrderEventException;
+import com.mohamedali.ledger.shared.exception.OrderOwnershipMismatchException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Collections;
@@ -121,6 +123,19 @@ public class GlobalExceptionHandler {
                 Collections.emptyList()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler({InvalidOrderEventException.class, OrderOwnershipMismatchException.class})
+    public ResponseEntity<ApiError> handleInvalidOrderEvent(RuntimeException exception,
+                                                            HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
     @ExceptionHandler(Exception.class)

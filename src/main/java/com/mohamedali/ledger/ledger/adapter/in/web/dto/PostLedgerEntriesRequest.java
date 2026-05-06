@@ -3,6 +3,7 @@ package com.mohamedali.ledger.ledger.adapter.in.web.dto;
 import com.mohamedali.ledger.ledger.domain.model.EntryDirection;
 import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesCommand;
 import com.mohamedali.ledger.ledger.domain.model.PostingLeg;
+import com.mohamedali.ledger.ledger.domain.model.Currency;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -34,7 +35,7 @@ public record PostLedgerEntriesRequest(
             @NotNull UUID accountId,
             @NotNull EntryDirection direction,
             @NotNull @DecimalMin(value = "0.00000001") BigDecimal amount,
-            @NotBlank String currency
+            @NotNull Currency currency
     ) {
         private PostingLeg toDomain() {
             return new PostingLeg(accountId, direction, amount, currency);

@@ -3,6 +3,7 @@ package com.mohamedali.ledger.ledger.domain.service;
 import com.mohamedali.ledger.ledger.domain.model.EntryDirection;
 import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesCommand;
 import com.mohamedali.ledger.ledger.domain.model.PostingLeg;
+import com.mohamedali.ledger.ledger.domain.model.Currency;
 import com.mohamedali.ledger.ledger.domain.exception.InvalidPostingStructureException;
 import com.mohamedali.ledger.ledger.domain.exception.UnbalancedPostingException;
 
@@ -22,8 +23,8 @@ public class BalancedPostingPolicy {
             throw new InvalidPostingStructureException("A posting requires at least 2 legs");
         }
 
-        Map<String, BigDecimal> debitByCurrency = new HashMap<>();
-        Map<String, BigDecimal> creditByCurrency = new HashMap<>();
+        Map<Currency, BigDecimal> debitByCurrency = new HashMap<>();
+        Map<Currency, BigDecimal> creditByCurrency = new HashMap<>();
 
         for (PostingLeg leg : legs) {
             if (leg.amount().signum() <= 0) {
@@ -42,7 +43,7 @@ public class BalancedPostingPolicy {
         }
 
         // Double-entry invariant is enforced per currency, not just on global totals.
-        for (String currency : debitByCurrency.keySet()) {
+        for (Currency currency : debitByCurrency.keySet()) {
             if (debitByCurrency.get(currency).compareTo(creditByCurrency.get(currency)) != 0) {
                 throw new UnbalancedPostingException("Posting is unbalanced for currency: " + currency);
             }

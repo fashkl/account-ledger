@@ -7,6 +7,7 @@ import com.mohamedali.ledger.ledger.application.port.in.LedgerBalanceQuery;
 import com.mohamedali.ledger.ledger.application.port.in.LedgerPostingUseCase;
 import com.mohamedali.ledger.ledger.domain.exception.InvalidPostingStructureException;
 import com.mohamedali.ledger.ledger.domain.exception.UnbalancedPostingException;
+import com.mohamedali.ledger.ledger.domain.model.Currency;
 import com.mohamedali.ledger.ledger.domain.model.EntryDirection;
 import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesCommand;
 import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesResult;
@@ -89,8 +90,8 @@ class LedgerPostingServiceIntegrationTest {
                 "VA_CREDITED",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(settledCashAccountId, EntryDirection.DEBIT, new BigDecimal("5000.00"), "AED"),
-                        new PostingLeg(omnibusAccountId, EntryDirection.CREDIT, new BigDecimal("5000.00"), "AED")
+                        new PostingLeg(settledCashAccountId, EntryDirection.DEBIT, new BigDecimal("5000.00"), Currency.AED),
+                        new PostingLeg(omnibusAccountId, EntryDirection.CREDIT, new BigDecimal("5000.00"), Currency.AED)
                 )
         );
     }
@@ -107,8 +108,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("5000.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("5000.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("5000.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("5000.00"), Currency.AED)
                 )
         );
 
@@ -128,8 +129,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 referenceId,
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("100.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("100.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), Currency.AED)
                 )
         );
         PostLedgerEntriesResult second = post(
@@ -137,8 +138,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 referenceId,
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("100.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("100.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), Currency.AED)
                 )
         );
 
@@ -157,8 +158,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("120.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("120.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("100.00"), Currency.AED)
                 )
         );
 
@@ -179,8 +180,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("6000.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("6000.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("6000.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("6000.00"), Currency.AED)
                 )
         );
 
@@ -202,8 +203,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
                 )
         );
 
@@ -220,8 +221,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 ref1,
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
                 )
         );
 
@@ -230,8 +231,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 ref2,
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
                 )
         );
 
@@ -246,8 +247,8 @@ class LedgerPostingServiceIntegrationTest {
                 UUID.randomUUID(),
                 LocalDate.now().plusDays(1),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
                 )
         );
 
@@ -275,8 +276,8 @@ class LedgerPostingServiceIntegrationTest {
                         "ORDER_HOLD",
                         UUID.randomUUID(),
                         List.of(
-                                new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), "AED"),
-                                new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), "AED")
+                                new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
+                                new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
                         )
                 );
                 return null;
@@ -301,8 +302,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("250.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("250.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("250.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("250.00"), Currency.AED)
                 )
         );
 
@@ -322,8 +323,8 @@ class LedgerPostingServiceIntegrationTest {
                 "ORDER_HOLD",
                 UUID.randomUUID(),
                 List.of(
-                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("50.00"), "AED"),
-                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("50.00"), "AED")
+                        new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("50.00"), Currency.AED),
+                        new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("50.00"), Currency.AED)
                 )
         );
 

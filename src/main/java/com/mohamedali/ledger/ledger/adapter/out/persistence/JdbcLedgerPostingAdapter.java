@@ -105,7 +105,7 @@ public class JdbcLedgerPostingAdapter implements LedgerPostingPersistencePort {
                 leg.accountId(),
                 leg.direction().name(),
                 leg.amount(),
-                leg.currency(),
+                leg.currency().name(),
                 command.eventType(),
                 command.referenceId(),
                 Date.valueOf(command.effectiveDate()),
