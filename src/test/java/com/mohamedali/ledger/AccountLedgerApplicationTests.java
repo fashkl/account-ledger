@@ -39,11 +39,15 @@ class AccountLedgerApplicationTests {
     void contextLoadsAndFlywayCreatesCoreTables() throws Exception {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT to_regclass('public.accounts'), to_regclass('public.journal_entries'), to_regclass('public.account_balances')")) {
+             ResultSet resultSet = statement.executeQuery(
+                     "SELECT to_regclass('public.accounts'), to_regclass('public.journal_entries'), to_regclass('public.account_balances'), to_regclass('public.ledger_postings'), to_regclass('public.order_states')"
+             )) {
             assertThat(resultSet.next()).isTrue();
             assertThat(resultSet.getString(1)).isEqualTo("accounts");
             assertThat(resultSet.getString(2)).isEqualTo("journal_entries");
             assertThat(resultSet.getString(3)).isEqualTo("account_balances");
+            assertThat(resultSet.getString(4)).isEqualTo("ledger_postings");
+            assertThat(resultSet.getString(5)).isEqualTo("order_states");
         }
     }
 }

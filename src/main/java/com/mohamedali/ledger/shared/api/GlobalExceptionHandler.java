@@ -1,5 +1,10 @@
 package com.mohamedali.ledger.shared.api;
 
+import com.mohamedali.ledger.ledger.domain.exception.DomainValidationException;
+import com.mohamedali.ledger.shared.exception.AccountClosedException;
+import com.mohamedali.ledger.shared.exception.AccountNotFoundException;
+import com.mohamedali.ledger.shared.exception.IdempotencyKeyCollisionException;
+import com.mohamedali.ledger.shared.exception.InsufficientFundsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Collections;
@@ -50,6 +55,72 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ResponseEntity<ApiError> handleDomainValidation(DomainValidationException exception,
+                                                           HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ApiError> handleAccountNotFound(AccountNotFoundException exception,
+                                                           HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(AccountClosedException.class)
+    public ResponseEntity<ApiError> handleAccountClosed(AccountClosedException exception,
+                                                         HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<ApiError> handleInsufficientFunds(InsufficientFundsException exception,
+                                                             HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+
+    @ExceptionHandler(IdempotencyKeyCollisionException.class)
+    public ResponseEntity<ApiError> handleIdempotencyCollision(IdempotencyKeyCollisionException exception,
+                                                                HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(Exception.class)
