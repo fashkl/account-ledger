@@ -5,8 +5,11 @@ import com.mohamedali.ledger.shared.exception.AccountClosedException;
 import com.mohamedali.ledger.shared.exception.AccountNotFoundException;
 import com.mohamedali.ledger.shared.exception.IdempotencyKeyCollisionException;
 import com.mohamedali.ledger.shared.exception.InsufficientFundsException;
+import com.mohamedali.ledger.shared.exception.InvalidCashMovementEventException;
 import com.mohamedali.ledger.shared.exception.InvalidOrderEventException;
+import com.mohamedali.ledger.shared.exception.InvalidWithdrawalStateException;
 import com.mohamedali.ledger.shared.exception.OrderOwnershipMismatchException;
+import com.mohamedali.ledger.shared.exception.WithdrawalNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Collections;
@@ -123,6 +126,32 @@ public class GlobalExceptionHandler {
                 Collections.emptyList()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(WithdrawalNotFoundException.class)
+    public ResponseEntity<ApiError> handleWithdrawalNotFound(WithdrawalNotFoundException exception,
+                                                              HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler({InvalidWithdrawalStateException.class, InvalidCashMovementEventException.class})
+    public ResponseEntity<ApiError> handleInvalidWithdrawalState(RuntimeException exception,
+                                                                   HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
     @ExceptionHandler({InvalidOrderEventException.class, OrderOwnershipMismatchException.class})
