@@ -5,6 +5,7 @@ import com.mohamedali.ledger.ledger.application.port.in.LedgerBalanceQuery;
 import com.mohamedali.ledger.ledger.application.port.in.withdrawal.CashMovementUseCase;
 import com.mohamedali.ledger.ledger.application.port.in.withdrawal.WithdrawalStatusQuery;
 import com.mohamedali.ledger.ledger.domain.model.withdrawal.WithdrawalRecord;
+import com.mohamedali.ledger.shared.tracing.DomainMdc;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -35,6 +36,10 @@ public class WithdrawalController {
 
     @PostMapping("/events")
     public ResponseEntity<Void> handle(@Valid @RequestBody CashMovementRequest request) {
+        DomainMdc.putIfPresent(DomainMdc.EVENT_ID, request.eventId());
+        DomainMdc.putIfPresent(DomainMdc.CUSTOMER_ID, request.customerId());
+        DomainMdc.putIfPresent(DomainMdc.REFERENCE_ID,
+                request.withdrawalId() != null ? request.withdrawalId() : request.eventId());
         cashMovementUseCase.handle(request.toCommand());
         return ResponseEntity.ok().build();
     }

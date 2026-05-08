@@ -265,6 +265,29 @@ class LedgerPostingServiceIntegrationTest {
     }
 
     @Test
+    void dbTriggerRejectsNegativeBalanceForConstrainedAccountType() {
+        assertThatThrownBy(() -> jdbcTemplate.update(
+                "UPDATE account_balances SET balance = ? WHERE account_id = ?",
+                new BigDecimal("-1.00"),
+                settledCashAccountId
+        ))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("negative balance is not allowed");
+    }
+
+    @Test
+    void dbTriggerAllowsNegativeBalanceForBrokerageOmnibus() {
+        int updated = jdbcTemplate.update(
+                "UPDATE account_balances SET balance = ? WHERE account_id = ?",
+                new BigDecimal("-6000.00"),
+                omnibusAccountId
+        );
+
+        assertThat(updated).isEqualTo(1);
+        assertThat(balanceQuery.getAccountBalance(omnibusAccountId)).isEqualByComparingTo("-6000.00");
+    }
+
+    @Test
     void concurrentPostingOnSameAccountDoesNotFail() throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(8);
         List<Callable<Void>> tasks = new ArrayList<>();

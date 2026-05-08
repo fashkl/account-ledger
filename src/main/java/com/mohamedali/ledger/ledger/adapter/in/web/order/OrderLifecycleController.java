@@ -4,6 +4,7 @@ import com.mohamedali.ledger.ledger.adapter.in.web.order.dto.OrderLifecycleReque
 import com.mohamedali.ledger.ledger.application.port.in.order.BuyingPowerQuery;
 import com.mohamedali.ledger.ledger.application.port.in.order.OrderLifecycleUseCase;
 import com.mohamedali.ledger.ledger.domain.model.Currency;
+import com.mohamedali.ledger.shared.tracing.DomainMdc;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class OrderLifecycleController {
 
     @PostMapping("/events")
     public ResponseEntity<Void> handle(@Valid @RequestBody OrderLifecycleRequest request) {
+        DomainMdc.putIfPresent(DomainMdc.REFERENCE_ID, request.referenceId());
+        DomainMdc.putIfPresent(DomainMdc.CUSTOMER_ID, request.customerId());
         lifecycleUseCase.handle(request.toCommand());
         return ResponseEntity.ok().build();
     }

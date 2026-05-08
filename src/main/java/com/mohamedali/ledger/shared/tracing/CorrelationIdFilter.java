@@ -33,10 +33,17 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         copyHeaderIfPresent(request, response, TracingHeaders.EVENT_ID);
         copyHeaderIfPresent(request, response, TracingHeaders.REFERENCE_ID);
         copyHeaderIfPresent(request, response, TracingHeaders.CUSTOMER_ID);
+        copyHeaderIfPresent(request, response, TracingHeaders.ENTRY_GROUP_ID);
+
+        DomainMdc.putIfPresent(DomainMdc.EVENT_ID, request.getHeader(TracingHeaders.EVENT_ID));
+        DomainMdc.putIfPresent(DomainMdc.REFERENCE_ID, request.getHeader(TracingHeaders.REFERENCE_ID));
+        DomainMdc.putIfPresent(DomainMdc.CUSTOMER_ID, request.getHeader(TracingHeaders.CUSTOMER_ID));
+        DomainMdc.putIfPresent(DomainMdc.ENTRY_GROUP_ID, request.getHeader(TracingHeaders.ENTRY_GROUP_ID));
 
         try {
             filterChain.doFilter(request, response);
         } finally {
+            DomainMdc.clearDomainKeys();
             MDC.remove(MDC_CORRELATION_ID);
         }
     }
@@ -50,4 +57,3 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         }
     }
 }
-

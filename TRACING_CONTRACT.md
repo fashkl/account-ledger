@@ -13,6 +13,7 @@ Recommended business metadata headers:
 - `X-Event-Id`
 - `X-Reference-Id`
 - `X-Customer-Id`
+- `X-Entry-Group-Id`
 
 ## HTTP ingress/egress behavior
 
@@ -38,6 +39,12 @@ Optional MDC keys for business observability (when available):
 - `customerId`
 - `entryGroupId`
 
+Population precedence:
+
+1. Set from inbound headers in `CorrelationIdFilter` when present.
+2. Override from request payload in inbound controllers when available.
+   This ensures payload values are authoritative while headers remain a valid fallback.
+
 ## Kafka propagation contract
 
 For every produced message, producers must set:
@@ -53,4 +60,3 @@ Consumers must:
 - Put `correlationId` and business keys into MDC while processing.
 - Preserve `traceparent` to keep a single distributed trace across
   `Kafka -> ledger -> settlement -> reconciliation`.
-

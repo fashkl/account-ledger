@@ -5,6 +5,7 @@ import com.mohamedali.ledger.ledger.adapter.in.web.dto.PostLedgerEntriesResponse
 import com.mohamedali.ledger.ledger.application.port.in.LedgerBalanceQuery;
 import com.mohamedali.ledger.ledger.application.port.in.LedgerPostingUseCase;
 import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesResult;
+import com.mohamedali.ledger.shared.tracing.DomainMdc;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -32,7 +33,9 @@ public class LedgerPostingController {
 
     @PostMapping("/postings")
     public ResponseEntity<PostLedgerEntriesResponse> post(@Valid @RequestBody PostLedgerEntriesRequest request) {
+        DomainMdc.putIfPresent(DomainMdc.REFERENCE_ID, request.referenceId());
         PostLedgerEntriesResult result = postingUseCase.post(request.toCommand());
+        DomainMdc.putIfPresent(DomainMdc.ENTRY_GROUP_ID, result.entryGroupId());
         return ResponseEntity.ok(new PostLedgerEntriesResponse(result.entryGroupId(), result.duplicate()));
     }
 

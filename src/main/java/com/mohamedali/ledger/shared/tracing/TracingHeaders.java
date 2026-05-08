@@ -16,8 +16,8 @@ public final class TracingHeaders {
     public static final String EVENT_ID = "X-Event-Id";
     public static final String REFERENCE_ID = "X-Reference-Id";
     public static final String CUSTOMER_ID = "X-Customer-Id";
+    public static final String ENTRY_GROUP_ID = "X-Entry-Group-Id";
 
     private TracingHeaders() {
     }
 }
-

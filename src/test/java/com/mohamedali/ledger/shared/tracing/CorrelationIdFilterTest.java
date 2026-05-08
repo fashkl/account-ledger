@@ -43,6 +43,10 @@ class CorrelationIdFilterTest {
         request.addHeader(TracingHeaders.CORRELATION_ID, "corr-123");
         request.addHeader(TracingHeaders.TRACEPARENT, "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01");
         request.addHeader(TracingHeaders.TRACESTATE, "vendor=value");
+        request.addHeader(TracingHeaders.EVENT_ID, "evt-1");
+        request.addHeader(TracingHeaders.REFERENCE_ID, "ref-1");
+        request.addHeader(TracingHeaders.CUSTOMER_ID, "cust-1");
+        request.addHeader(TracingHeaders.ENTRY_GROUP_ID, "eg-1");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         FilterChain chain = mock(FilterChain.class);
@@ -52,6 +56,14 @@ class CorrelationIdFilterTest {
         assertThat(response.getHeader(TracingHeaders.TRACEPARENT))
                 .isEqualTo("00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01");
         assertThat(response.getHeader(TracingHeaders.TRACESTATE)).isEqualTo("vendor=value");
+        assertThat(response.getHeader(TracingHeaders.EVENT_ID)).isEqualTo("evt-1");
+        assertThat(response.getHeader(TracingHeaders.REFERENCE_ID)).isEqualTo("ref-1");
+        assertThat(response.getHeader(TracingHeaders.CUSTOMER_ID)).isEqualTo("cust-1");
+        assertThat(response.getHeader(TracingHeaders.ENTRY_GROUP_ID)).isEqualTo("eg-1");
+
+        assertThat(MDC.get(DomainMdc.EVENT_ID)).isNull();
+        assertThat(MDC.get(DomainMdc.REFERENCE_ID)).isNull();
+        assertThat(MDC.get(DomainMdc.CUSTOMER_ID)).isNull();
+        assertThat(MDC.get(DomainMdc.ENTRY_GROUP_ID)).isNull();
     }
 }
-
