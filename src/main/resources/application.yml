@@ -55,11 +55,12 @@ resilience4j:
   circuitbreaker:
     instances:
       ledgerProcessing:
-        sliding-window-size: 20
+        sliding-window-type: TIME_BASED
+        sliding-window-size: 60
         minimum-number-of-calls: 10
-        failure-rate-threshold: 50
+        failure-rate-threshold: 5
         wait-duration-in-open-state: 30s
-        permitted-number-of-calls-in-half-open-state: 3
+        permitted-number-of-calls-in-half-open-state: 10
   retry:
     instances:
       ledgerProcessingRetry:
@@ -82,7 +83,9 @@ ledger:
         max-lifetime: ${SETTLEMENT_DB_MAX_LIFETIME_MS:1800000}
         keepalive-time: ${SETTLEMENT_DB_KEEPALIVE_MS:60000}
     read-replica:
-      enabled: ${READ_REPLICA_ENABLED:true}
+      enabled: ${READ_REPLICA_ENABLED:false}
+      max-lag-ms: ${READ_REPLICA_MAX_LAG_MS:500}
+      lag-check-interval-ms: ${READ_REPLICA_LAG_CHECK_INTERVAL_MS:5000}
       url: ${READ_REPLICA_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/account_ledger}}
       username: ${READ_REPLICA_DB_USER:${DB_USER:postgres}}
       password: ${READ_REPLICA_DB_PASSWORD:${DB_PASSWORD:superpass}}

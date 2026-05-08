@@ -10,6 +10,7 @@ import com.mohamedali.ledger.ledger.domain.model.PostLedgerEntriesResult;
 import com.mohamedali.ledger.ledger.domain.service.BalancedPostingPolicy;
 import com.mohamedali.ledger.shared.exception.AccountClosedException;
 import com.mohamedali.ledger.shared.exception.AccountNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class LedgerPostingUseCaseService implements LedgerPostingUseCase, Ledger
 
     @Override
     @Transactional
+    @CircuitBreaker(name = "ledgerProcessing")
     public PostLedgerEntriesResult post(@Valid PostLedgerEntriesCommand command) {
         postingPolicy.validate(command);
         validateEffectiveDate(command.effectiveDate());

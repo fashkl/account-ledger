@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,9 @@ class LedgerPostingServiceIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private CircuitBreakerRegistry circuitBreakerRegistry;
+
     private UUID customerId;
     private UUID reservedCashAccountId;
     private UUID settledCashAccountId;
@@ -74,6 +78,7 @@ class LedgerPostingServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        circuitBreakerRegistry.circuitBreaker("ledgerProcessing").reset();
         jdbcTemplate.execute("TRUNCATE TABLE account_balances, journal_entries, ledger_postings, order_states, accounts CASCADE");
 
         customerId = UUID.randomUUID();
@@ -98,6 +103,7 @@ class LedgerPostingServiceIntegrationTest {
 
     @AfterEach
     void clean() {
+        circuitBreakerRegistry.circuitBreaker("ledgerProcessing").reset();
         jdbcTemplate.execute("TRUNCATE TABLE account_balances, journal_entries, ledger_postings, order_states, accounts CASCADE");
     }
 

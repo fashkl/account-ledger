@@ -2,8 +2,10 @@ package com.mohamedali.ledger.ledger.adapter.in.messaging;
 
 import com.mohamedali.ledger.shared.infra.CircuitBreakerLifecycleListener;
 import com.mohamedali.ledger.shared.tracing.DomainMdc;
+import com.mohamedali.ledger.platform.kafka.KafkaConsumerControlService;
 import io.micrometer.core.instrument.MeterRegistry;
 import com.mohamedali.ledger.platform.kafka.KafkaLagTracker;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.time.Instant;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -23,15 +25,18 @@ public class KafkaLedgerEventConsumer {
     private final LedgerEventProcessor processor;
     private final MeterRegistry meterRegistry;
     private final KafkaLagTracker lagTracker;
+    private final KafkaConsumerControlService controlService;
 
     public KafkaLedgerEventConsumer(ObjectMapper objectMapper,
                                     LedgerEventProcessor processor,
                                     MeterRegistry meterRegistry,
-                                    KafkaLagTracker lagTracker) {
+                                    KafkaLagTracker lagTracker,
+                                    KafkaConsumerControlService controlService) {
         this.objectMapper = objectMapper;
         this.processor = processor;
         this.meterRegistry = meterRegistry;
         this.lagTracker = lagTracker;
+        this.controlService = controlService;
     }
 
     @KafkaListener(
@@ -51,12 +56,18 @@ public class KafkaLedgerEventConsumer {
 
             if (event.occurredAtEpochMs() != null) {
                 long lagMs = Instant.now().toEpochMilli() - event.occurredAtEpochMs();
-                lagTracker.updateLagSeconds(lagMs / 1000);
+                lagTracker.updateMessageStalenessSeconds(lagMs / 1000);
             }
 
             processor.process(event);
             acknowledgment.acknowledge();
             meterRegistry.counter("kafka_events_processed_total", "topic", String.valueOf(topic), "type", String.valueOf(event.eventType())).increment();
+        } catch (CallNotPermittedException ex) {
+            // Circuit is open: pause consumption and keep offset unacked so record is retried after recovery.
+            controlService.pause(CircuitBreakerLifecycleListener.LEDGER_CONSUMER_LISTENER_ID, "circuit open");
+            meterRegistry.counter("kafka_events_paused_total", "reason", "circuit_open").increment();
+            LOG.warn("Kafka processing paused due to open circuit topic={} partition={} offset={} eventId={}",
+                    record.topic(), record.partition(), record.offset(), event.eventId());
         } catch (Exception ex) {
             meterRegistry.counter("kafka_events_failed_total", "topic", String.valueOf(topic)).increment();
             LOG.error("Kafka event processing failed topic={} partition={} offset={} eventId={} error={}",

@@ -6,16 +6,11 @@ import com.mohamedali.ledger.ledger.domain.model.order.OrderEventType;
 import com.mohamedali.ledger.ledger.domain.model.order.OrderLifecycleCommand;
 import com.mohamedali.ledger.ledger.domain.model.withdrawal.CashMovementCommand;
 import com.mohamedali.ledger.ledger.domain.model.withdrawal.CashMovementEventType;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LedgerEventProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LedgerEventProcessor.class);
 
     private final OrderLifecycleUseCase orderLifecycleUseCase;
     private final CashMovementUseCase cashMovementUseCase;
@@ -27,7 +22,6 @@ public class LedgerEventProcessor {
     }
 
     @Retry(name = "ledgerProcessingRetry")
-    @CircuitBreaker(name = "ledgerProcessing", fallbackMethod = "fallbackOnOpenCircuit")
     public void process(ExternalLedgerEvent event) {
         if (event.eventType() == null) {
             throw new IllegalArgumentException("eventType is required");
@@ -67,12 +61,6 @@ public class LedgerEventProcessor {
         }
 
         throw new IllegalArgumentException("Unsupported eventType: " + event.eventType());
-    }
-
-    public void fallbackOnOpenCircuit(ExternalLedgerEvent event, Throwable t) {
-        LOG.warn("Circuit open or retries exhausted for eventId={} type={} reason={}",
-                event.eventId(), event.eventType(), t.toString());
-        throw t instanceof RuntimeException ? (RuntimeException) t : new RuntimeException(t);
     }
 
     private static <T> T require(T value, String field) {
