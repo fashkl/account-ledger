@@ -10,6 +10,8 @@ import com.mohamedali.ledger.ledger.adapter.out.persistence.order.JdbcOrderState
 import com.mohamedali.ledger.ledger.application.port.out.order.OrderStatePersistencePort.BuyingPowerComponents;
 import com.mohamedali.ledger.ledger.domain.model.Currency;
 import com.mohamedali.ledger.ledger.domain.service.AccountTypePolicy;
+import com.mohamedali.ledger.platform.config.ReadReplicaRoutingJdbcTemplate;
+import com.mohamedali.ledger.platform.config.ReadReplicaRoutingState;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -62,5 +64,28 @@ class ReadReplicaRoutingTest {
                 ArgumentMatchers.eq(customerId),
                 ArgumentMatchers.eq("AED")
         );
+    }
+
+    @Test
+    void replicaLagExceedsThresholdFallsBackToPrimary() {
+        JdbcTemplate primary = org.mockito.Mockito.mock(JdbcTemplate.class);
+        JdbcTemplate replica = org.mockito.Mockito.mock(JdbcTemplate.class);
+        ReadReplicaRoutingState routingState = new ReadReplicaRoutingState();
+        routingState.setReplicaHealthy(false);
+        UUID accountId = UUID.randomUUID();
+
+        when(primary.queryForObject("SELECT balance FROM account_balances WHERE account_id = ?", BigDecimal.class, accountId))
+                .thenReturn(new BigDecimal("88.00"));
+
+        ReadReplicaRoutingJdbcTemplate routingTemplate = new ReadReplicaRoutingJdbcTemplate(primary, replica, routingState, true);
+        BigDecimal balance = routingTemplate.queryForObject(
+                "SELECT balance FROM account_balances WHERE account_id = ?",
+                BigDecimal.class,
+                accountId
+        );
+
+        assertThat(balance).isEqualByComparingTo("88.00");
+        verify(primary).queryForObject("SELECT balance FROM account_balances WHERE account_id = ?", BigDecimal.class, accountId);
+        verify(replica, never()).queryForObject("SELECT balance FROM account_balances WHERE account_id = ?", BigDecimal.class, accountId);
     }
 }
