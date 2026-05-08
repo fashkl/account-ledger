@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")

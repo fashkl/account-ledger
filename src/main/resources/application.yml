@@ -51,6 +51,14 @@ management:
     sampling:
       probability: 1.0
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
 resilience4j:
   circuitbreaker:
     instances:
@@ -70,6 +78,9 @@ resilience4j:
         exponential-backoff-multiplier: 2
 
 ledger:
+  seed:
+    enabled: ${LEDGER_SEED_ENABLED:false}
+    default-dataset: ${LEDGER_SEED_DEFAULT_DATASET:medium}
   datasource:
     settlement:
       url: ${SETTLEMENT_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/account_ledger}}
