@@ -29,7 +29,8 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
             return jdbcTemplate.queryForObject(
                     """
                     SELECT reference_id, customer_id, settled_cash_account_id, reserved_cash_account_id,
-                           unsettled_cash_buys_account_id, state, held_amount, filled_amount, currency, updated_at
+                           unsettled_cash_buys_account_id, unsettled_cash_sales_account_id,
+                           state, held_amount, filled_amount, currency, updated_at
                     FROM order_states
                     WHERE reference_id = ?
                     FOR UPDATE
@@ -40,6 +41,7 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
                             (UUID) rs.getObject("settled_cash_account_id"),
                             (UUID) rs.getObject("reserved_cash_account_id"),
                             (UUID) rs.getObject("unsettled_cash_buys_account_id"),
+                            (UUID) rs.getObject("unsettled_cash_sales_account_id"),
                             OrderState.valueOf(rs.getString("state")),
                             rs.getBigDecimal("held_amount"),
                             rs.getBigDecimal("filled_amount"),
@@ -59,15 +61,17 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
                 """
                 INSERT INTO order_states(
                     reference_id, customer_id, settled_cash_account_id, reserved_cash_account_id,
-                    unsettled_cash_buys_account_id, state, held_amount, filled_amount, currency, updated_at
+                    unsettled_cash_buys_account_id, unsettled_cash_sales_account_id,
+                    state, held_amount, filled_amount, currency, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 state.referenceId(),
                 state.customerId(),
                 state.settledCashAccountId(),
                 state.reservedCashAccountId(),
                 state.unsettledCashBuysAccountId(),
+                state.unsettledCashSalesAccountId(),
                 state.state().name(),
                 state.heldAmount(),
                 state.filledAmount(),
@@ -137,7 +141,8 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
         return jdbcTemplate.query(
                 """
                 SELECT reference_id, customer_id, settled_cash_account_id, reserved_cash_account_id,
-                       unsettled_cash_buys_account_id, state, held_amount, filled_amount, currency, updated_at
+                       unsettled_cash_buys_account_id, unsettled_cash_sales_account_id,
+                       state, held_amount, filled_amount, currency, updated_at
                 FROM order_states
                 WHERE state IN ('HOLD', 'PARTIALLY_FILLED')
                   AND updated_at < ?
@@ -156,6 +161,7 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
                         (UUID) rs.getObject("settled_cash_account_id"),
                         (UUID) rs.getObject("reserved_cash_account_id"),
                         (UUID) rs.getObject("unsettled_cash_buys_account_id"),
+                        (UUID) rs.getObject("unsettled_cash_sales_account_id"),
                         OrderState.valueOf(rs.getString("state")),
                         rs.getBigDecimal("held_amount"),
                         rs.getBigDecimal("filled_amount"),

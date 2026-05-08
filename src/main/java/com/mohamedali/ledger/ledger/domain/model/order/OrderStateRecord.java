@@ -11,6 +11,7 @@ public record OrderStateRecord(
         UUID settledCashAccountId,
         UUID reservedCashAccountId,
         UUID unsettledCashBuysAccountId,
+        UUID unsettledCashSalesAccountId,
         OrderState state,
         BigDecimal heldAmount,
         BigDecimal filledAmount,

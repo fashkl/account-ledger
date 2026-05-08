@@ -33,3 +33,25 @@ management:
     enabled: true
     sampling:
       probability: 1.0
+
+ledger:
+  datasource:
+    settlement:
+      url: ${SETTLEMENT_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/account_ledger}}
+      username: ${SETTLEMENT_DB_USER:${DB_USER:postgres}}
+      password: ${SETTLEMENT_DB_PASSWORD:${DB_PASSWORD:superpass}}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: ${SETTLEMENT_DB_POOL_MAX:10}
+        minimum-idle: ${SETTLEMENT_DB_POOL_MIN:2}
+        connection-timeout: ${SETTLEMENT_DB_CONN_TIMEOUT_MS:10000}
+        max-lifetime: ${SETTLEMENT_DB_MAX_LIFETIME_MS:1800000}
+        keepalive-time: ${SETTLEMENT_DB_KEEPALIVE_MS:60000}
+  jobs:
+    settlement:
+      cron: ${SETTLEMENT_CRON:0 15 0 * * *}
+      chunk-size: ${SETTLEMENT_CHUNK_SIZE:200}
+    reconciliation:
+      cron: ${RECONCILIATION_CRON:0 0 */4 * * *}
+      bank-check-cron: ${RECONCILIATION_BANK_CHECK_CRON:0 30 1 * * *}
+      lookback-hours: ${RECONCILIATION_LOOKBACK_HOURS:4}
