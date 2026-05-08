@@ -25,17 +25,20 @@ public class ReconciliationService {
     private static final long RECONCILIATION_BANK_LOCK_KEY = 777003L;
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate readReplicaJdbcTemplate;
     private final JdbcReconciliationRepository reconciliationRepository;
     private final BankStatementProvider bankStatementProvider;
     private final MeterRegistry meterRegistry;
     private final int lookbackHours;
 
     public ReconciliationService(JdbcTemplate jdbcTemplate,
+                                 @org.springframework.beans.factory.annotation.Qualifier("readReplicaJdbcTemplate") JdbcTemplate readReplicaJdbcTemplate,
                                  JdbcReconciliationRepository reconciliationRepository,
                                  BankStatementProvider bankStatementProvider,
                                  MeterRegistry meterRegistry,
                                  @Value("${ledger.jobs.reconciliation.lookback-hours:4}") int lookbackHours) {
         this.jdbcTemplate = jdbcTemplate;
+        this.readReplicaJdbcTemplate = readReplicaJdbcTemplate;
         this.reconciliationRepository = reconciliationRepository;
         this.bankStatementProvider = bankStatementProvider;
         this.meterRegistry = meterRegistry;
@@ -80,7 +83,7 @@ public class ReconciliationService {
         int mismatches = 0;
         try {
             for (Currency currency : Currency.values()) {
-                BigDecimal internal = jdbcTemplate.queryForObject(
+                BigDecimal internal = readReplicaJdbcTemplate.queryForObject(
                         """
                         SELECT COALESCE(SUM(ab.balance), 0)
                         FROM account_balances ab
@@ -121,7 +124,7 @@ public class ReconciliationService {
     }
 
     private int detectSnapshotMismatches(UUID runId, OffsetDateTime since) {
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+        List<Map<String, Object>> rows = readReplicaJdbcTemplate.queryForList(
                 """
                 WITH impacted_accounts AS (
                     SELECT DISTINCT account_id
@@ -167,7 +170,7 @@ public class ReconciliationService {
 
     private int detectJournalInvariantViolations(UUID runId, OffsetDateTime since) {
         LocalDate sinceDate = since.toLocalDate();
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+        List<Map<String, Object>> rows = readReplicaJdbcTemplate.queryForList(
                 """
                 WITH impacted_entry_groups AS (
                     SELECT DISTINCT entry_group_id

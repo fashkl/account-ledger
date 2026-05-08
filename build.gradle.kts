@@ -30,12 +30,18 @@ dependencies {
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
+    implementation("org.springframework.boot:spring-boot-starter-kafka")
+    implementation("org.springframework:spring-aop")
+    implementation("org.springframework:spring-aspects")
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")
+
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.opentelemetry:opentelemetry-exporter-otlp")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

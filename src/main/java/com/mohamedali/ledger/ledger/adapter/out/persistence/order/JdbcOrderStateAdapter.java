@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -18,9 +19,12 @@ import org.springframework.stereotype.Component;
 public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate readReplicaJdbcTemplate;
 
-    public JdbcOrderStateAdapter(JdbcTemplate jdbcTemplate) {
+    public JdbcOrderStateAdapter(JdbcTemplate jdbcTemplate,
+                                 @Qualifier("readReplicaJdbcTemplate") JdbcTemplate readReplicaJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.readReplicaJdbcTemplate = readReplicaJdbcTemplate;
     }
 
     @Override
@@ -99,7 +103,7 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
 
     @Override
     public BuyingPowerComponents getBuyingPowerComponentsForShare(UUID customerId, Currency currency) {
-        List<BuyingPowerComponents> values = jdbcTemplate.query(
+        List<BuyingPowerComponents> values = readReplicaJdbcTemplate.query(
                 """
                 WITH locked_accounts AS (
                     SELECT a.type, COALESCE(ab.balance, 0) AS balance
@@ -107,7 +111,6 @@ public class JdbcOrderStateAdapter implements OrderStatePersistencePort {
                     LEFT JOIN account_balances ab ON a.id = ab.account_id
                     WHERE a.customer_id = ?
                       AND a.currency = ?
-                    FOR SHARE OF a
                 )
                 SELECT
                     COALESCE(SUM(CASE WHEN type = 'SETTLED_CASH' THEN balance ELSE 0 END), 0) AS settled_cash,

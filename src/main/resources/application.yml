@@ -19,6 +19,23 @@ spring:
     error:
       include-message: never
       include-binding-errors: never
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:ledger-consumers-v1}
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      max-poll-records: 100
+      properties:
+        isolation.level: read_committed
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      ack-mode: manual
+      missing-topics-fatal: false
 
 management:
   endpoints:
@@ -34,6 +51,23 @@ management:
     sampling:
       probability: 1.0
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      ledgerProcessing:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+  retry:
+    instances:
+      ledgerProcessingRetry:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
 ledger:
   datasource:
     settlement:
@@ -47,6 +81,22 @@ ledger:
         connection-timeout: ${SETTLEMENT_DB_CONN_TIMEOUT_MS:10000}
         max-lifetime: ${SETTLEMENT_DB_MAX_LIFETIME_MS:1800000}
         keepalive-time: ${SETTLEMENT_DB_KEEPALIVE_MS:60000}
+    read-replica:
+      enabled: ${READ_REPLICA_ENABLED:true}
+      url: ${READ_REPLICA_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/account_ledger}}
+      username: ${READ_REPLICA_DB_USER:${DB_USER:postgres}}
+      password: ${READ_REPLICA_DB_PASSWORD:${DB_PASSWORD:superpass}}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: ${READ_REPLICA_DB_POOL_MAX:20}
+        minimum-idle: ${READ_REPLICA_DB_POOL_MIN:5}
+        connection-timeout: ${READ_REPLICA_DB_CONN_TIMEOUT_MS:10000}
+        max-lifetime: ${READ_REPLICA_DB_MAX_LIFETIME_MS:1800000}
+        keepalive-time: ${READ_REPLICA_DB_KEEPALIVE_MS:60000}
+  kafka:
+    topic:
+      events: ${LEDGER_KAFKA_EVENTS_TOPIC:ledger-events.v1}
+      dlq: ${LEDGER_KAFKA_DLQ_TOPIC:ledger-events.v1.dlq}
   jobs:
     settlement:
       cron: ${SETTLEMENT_CRON:0 15 0 * * *}

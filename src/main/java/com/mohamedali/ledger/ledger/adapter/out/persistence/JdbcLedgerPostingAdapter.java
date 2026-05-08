@@ -27,10 +27,14 @@ import org.springframework.stereotype.Component;
 public class JdbcLedgerPostingAdapter implements LedgerPostingPersistencePort {
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate readReplicaJdbcTemplate;
     private final AccountTypePolicy accountTypePolicy;
 
-    public JdbcLedgerPostingAdapter(JdbcTemplate jdbcTemplate, AccountTypePolicy accountTypePolicy) {
+    public JdbcLedgerPostingAdapter(JdbcTemplate jdbcTemplate,
+                                   @org.springframework.beans.factory.annotation.Qualifier("readReplicaJdbcTemplate") JdbcTemplate readReplicaJdbcTemplate,
+                                   AccountTypePolicy accountTypePolicy) {
         this.jdbcTemplate = jdbcTemplate;
+        this.readReplicaJdbcTemplate = readReplicaJdbcTemplate;
         this.accountTypePolicy = accountTypePolicy;
     }
 
@@ -193,7 +197,7 @@ public class JdbcLedgerPostingAdapter implements LedgerPostingPersistencePort {
     @Override
     public Optional<BigDecimal> getBalance(UUID accountId) {
         try {
-            BigDecimal balance = jdbcTemplate.queryForObject(
+            BigDecimal balance = readReplicaJdbcTemplate.queryForObject(
                     "SELECT balance FROM account_balances WHERE account_id = ?",
                     BigDecimal.class,
                     accountId

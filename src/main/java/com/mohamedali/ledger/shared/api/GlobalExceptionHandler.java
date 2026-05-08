@@ -10,6 +10,7 @@ import com.mohamedali.ledger.shared.exception.InvalidOrderEventException;
 import com.mohamedali.ledger.shared.exception.InvalidWithdrawalStateException;
 import com.mohamedali.ledger.shared.exception.OrderOwnershipMismatchException;
 import com.mohamedali.ledger.shared.exception.WithdrawalNotFoundException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Collections;
@@ -165,6 +166,22 @@ public class GlobalExceptionHandler {
                 Collections.emptyList()
         );
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ResponseEntity<ApiError> handleCircuitOpen(CallNotPermittedException exception,
+                                                      HttpServletRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+                "Service temporarily unavailable, retry later",
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header("Retry-After", "30")
+                .body(error);
     }
 
     @ExceptionHandler(Exception.class)
