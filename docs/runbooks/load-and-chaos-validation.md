@@ -12,14 +12,14 @@
 4. Reconciliation overlap contention
 
 ## Repeatable Load Profiles
-- `docs/phase5/k6/posting-load.js` (posting p99 target `<50ms`, requires seeded valid posting payloads)
-- `docs/phase5/k6/balance-read-load.js` (buying power reads p99 target `<10ms`)
-- `docs/phase5/k6/reconciliation-load.js` (reconciliation trigger p99 target `<5s`)
+- `docs/k6/posting-load.js` (posting p99 target `<50ms`, requires seeded valid posting payloads)
+- `docs/k6/balance-read-load.js` (buying power reads p99 target `<10ms`)
+- `docs/k6/reconciliation-load.js` (reconciliation trigger p99 target `<5s`)
 
 Run examples:
-- `k6 run docs/phase5/k6/posting-load.js -e BASE_URL=http://localhost:8080`
-- `k6 run docs/phase5/k6/balance-read-load.js -e BASE_URL=http://localhost:8080 -e CUSTOMER_ID=<uuid>`
-- `k6 run docs/phase5/k6/reconciliation-load.js -e BASE_URL=http://localhost:8080`
+- `k6 run docs/k6/posting-load.js -e BASE_URL=http://localhost:8080`
+- `k6 run docs/k6/balance-read-load.js -e BASE_URL=http://localhost:8080 -e CUSTOMER_ID=<uuid>`
+- `k6 run docs/k6/reconciliation-load.js -e BASE_URL=http://localhost:8080`
 
 ## Kafka / Alert Baselines
 - Alert when `kafka_consumer_lag_seconds > 60` for `5m`.

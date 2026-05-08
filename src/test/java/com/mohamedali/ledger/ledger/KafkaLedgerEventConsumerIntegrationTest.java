@@ -92,8 +92,11 @@ class KafkaLedgerEventConsumerIntegrationTest {
 
     @AfterEach
     void clean() {
-        circuitBreakerRegistry.circuitBreaker("ledgerProcessing").reset();
+        // Truncate first while the consumer is still paused (circuit may be open from the test).
+        // Resetting the circuit breaker before truncation resumes the consumer, which races with
+        // TRUNCATE and causes a deadlock if any message is pending in the partition.
         jdbcTemplate.execute("TRUNCATE TABLE reconciliation_issues, reconciliation_runs, settlement_batches, withdrawal_requests, account_balances, journal_entries, ledger_postings, order_states, accounts CASCADE");
+        circuitBreakerRegistry.circuitBreaker("ledgerProcessing").reset();
     }
 
     @Test

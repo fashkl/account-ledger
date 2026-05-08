@@ -46,5 +46,31 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("load", "chaos")
+    }
+}
+
+tasks.register<Test>("loadTest") {
+    description = "Run 500/sec posting-engine load tests"
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("load")
+    }
+    maxHeapSize = "2g"
+    testLogging {
+        events("passed", "failed")
+        showStandardStreams = true
+    }
+}
+
+tasks.register<Test>("chaosTest") {
+    description = "Run automated chaos / invariant tests"
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("chaos")
+    }
+    testLogging {
+        events("passed", "failed")
+    }
 }

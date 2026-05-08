@@ -2,7 +2,6 @@ package com.mohamedali.ledger.platform.kafka;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
 import org.apache.kafka.clients.admin.OffsetSpec;
@@ -18,24 +17,21 @@ public class KafkaConsumerLagMonitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerLagMonitor.class);
 
-    private final String bootstrapServers;
+    private final AdminClient adminClient;
     private final String groupId;
     private final KafkaLagTracker lagTracker;
 
-    public KafkaConsumerLagMonitor(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
+    public KafkaConsumerLagMonitor(AdminClient adminClient,
                                    @Value("${spring.kafka.consumer.group-id}") String groupId,
                                    KafkaLagTracker lagTracker) {
-        this.bootstrapServers = bootstrapServers;
+        this.adminClient = adminClient;
         this.groupId = groupId;
         this.lagTracker = lagTracker;
     }
 
     @Scheduled(fixedDelay = 5000L)
     public void updateLag() {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", bootstrapServers);
-
-        try (AdminClient adminClient = AdminClient.create(props)) {
+        try {
             ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(groupId);
             Map<TopicPartition, org.apache.kafka.clients.consumer.OffsetAndMetadata> committed = offsetsResult
                     .partitionsToOffsetAndMetadata().get();
