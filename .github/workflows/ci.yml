@@ -9,6 +9,24 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: account_ledger
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: superpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d account_ledger"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/account_ledger
+      DB_USER: postgres
+      DB_PASSWORD: superpass
 
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +49,15 @@ jobs:
 
       - name: Build
         run: ./gradlew build -x test --no-daemon
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            (echo > /dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
 
       - name: Test
         run: ./gradlew test --no-daemon
