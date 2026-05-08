@@ -25,6 +25,7 @@ import com.mohamedali.ledger.ledger.domain.model.order.OrderEventType;
 import com.mohamedali.ledger.ledger.domain.model.withdrawal.CashMovementEventType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -56,7 +57,7 @@ class ControllerMdcEnrichmentTest {
                 "idemp-1",
                 "ORDER_HOLD",
                 referenceId,
-                LocalDate.now(),
+                LocalDate.now(ZoneOffset.UTC),
                 List.of(
                         new PostLedgerEntriesRequest.PostingLegRequest(
                                 UUID.randomUUID(),
@@ -135,4 +136,3 @@ class ControllerMdcEnrichmentTest {
         ));
     }
 }
-

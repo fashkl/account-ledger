@@ -18,6 +18,7 @@ import com.mohamedali.ledger.shared.exception.IdempotencyKeyCollisionException;
 import com.mohamedali.ledger.shared.exception.InsufficientFundsException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -251,7 +252,7 @@ class LedgerPostingServiceIntegrationTest {
                 "future-effective",
                 "ORDER_HOLD",
                 UUID.randomUUID(),
-                LocalDate.now().plusDays(1),
+                LocalDate.now(ZoneOffset.UTC).plusDays(1),
                 List.of(
                         new PostingLeg(reservedCashAccountId, EntryDirection.DEBIT, new BigDecimal("10.00"), Currency.AED),
                         new PostingLeg(settledCashAccountId, EntryDirection.CREDIT, new BigDecimal("10.00"), Currency.AED)
@@ -384,6 +385,6 @@ class LedgerPostingServiceIntegrationTest {
     }
 
     private PostLedgerEntriesCommand command(String key, String eventType, UUID referenceId, List<PostingLeg> legs) {
-        return new PostLedgerEntriesCommand(key, eventType, referenceId, LocalDate.now(), legs);
+        return new PostLedgerEntriesCommand(key, eventType, referenceId, LocalDate.now(ZoneOffset.UTC), legs);
     }
 }

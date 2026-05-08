@@ -17,6 +17,7 @@ import com.mohamedali.ledger.shared.exception.InsufficientFundsException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -121,7 +122,7 @@ class ChaosIntegrationTest {
                 idempotencyKey,
                 "VA_CREDITED",
                 customerId,
-                LocalDate.now(),
+                LocalDate.now(ZoneOffset.UTC),
                 List.of(
                         new PostingLeg(settledCash, EntryDirection.DEBIT, new BigDecimal("100.00"), Currency.AED),
                         new PostingLeg(omnibus, EntryDirection.CREDIT, new BigDecimal("100.00"), Currency.AED)
@@ -184,7 +185,7 @@ class ChaosIntegrationTest {
                 "future-date-" + UUID.randomUUID(),
                 "VA_CREDITED",
                 customerId,
-                LocalDate.now().plusDays(1),
+                LocalDate.now(ZoneOffset.UTC).plusDays(1),
                 List.of(
                         new PostingLeg(settledCash, EntryDirection.DEBIT, new BigDecimal("50.00"), Currency.AED),
                         new PostingLeg(omnibus, EntryDirection.CREDIT, new BigDecimal("50.00"), Currency.AED)
@@ -275,7 +276,7 @@ class ChaosIntegrationTest {
                 "chaos-seed-" + UUID.randomUUID(),
                 "VA_CREDITED",
                 customerId,
-                LocalDate.now(),
+                LocalDate.now(ZoneOffset.UTC),
                 List.of(
                         new PostingLeg(settledCash, EntryDirection.DEBIT, amount, Currency.AED),
                         new PostingLeg(omnibus, EntryDirection.CREDIT, amount, Currency.AED)

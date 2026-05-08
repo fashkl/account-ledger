@@ -12,6 +12,9 @@
 4. Reconciliation overlap contention
 
 ## Repeatable Load Profiles
+## Seed Prerequisite
+- Seed data before load tests: `POST /api/v1/admin/seed/run?dataset=medium&reset=true`
+
 - `docs/k6/posting-load.js` (posting p99 target `<50ms`, requires seeded valid posting payloads)
 - `docs/k6/balance-read-load.js` (buying power reads p99 target `<10ms`)
 - `docs/k6/reconciliation-load.js` (reconciliation trigger p99 target `<5s`)

@@ -18,6 +18,7 @@ import com.mohamedali.ledger.shared.exception.InvalidOrderEventException;
 import com.mohamedali.ledger.shared.exception.OrderOwnershipMismatchException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -268,7 +269,7 @@ class OrderLifecycleServiceIntegrationTest {
                 "seed-deposit-" + UUID.randomUUID(),
                 "VA_CREDITED",
                 UUID.randomUUID(),
-                LocalDate.now(),
+                LocalDate.now(ZoneOffset.UTC),
                 List.of(
                         new PostingLeg(settledCashAccountId, EntryDirection.DEBIT, amount, Currency.AED),
                         new PostingLeg(omnibusAccountId, EntryDirection.CREDIT, amount, Currency.AED)

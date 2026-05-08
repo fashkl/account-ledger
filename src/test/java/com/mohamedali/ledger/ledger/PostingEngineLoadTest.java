@@ -14,6 +14,7 @@ import com.mohamedali.ledger.ledger.domain.model.order.OrderLifecycleCommand;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -230,7 +231,7 @@ class PostingEngineLoadTest {
                 "load-test-deposit-" + customerId,
                 "VA_CREDITED",
                 customerId,
-                LocalDate.now(),
+                LocalDate.now(ZoneOffset.UTC),
                 List.of(
                         new PostingLeg(settledCash, EntryDirection.DEBIT, INITIAL_DEPOSIT, Currency.AED),
                         new PostingLeg(omnibus, EntryDirection.CREDIT, INITIAL_DEPOSIT, Currency.AED)
